@@ -1,0 +1,90 @@
+display dialog "Computer Organizer
+Work efficiently by keeping your computer neat organized!" buttons {"Desktop Clean Up!!", "More Options", "Cancel"} default button 1
+
+
+--If user selects Remove Files
+if result = {button returned:"More Options"} then
+	display dialog "More Options" buttons {"Remove Files", "Naming", "Cancel"} default button 1
+	
+	if result = {button returned:"Remove Files"} then
+		display dialog "WARNING: This will delete all files older than a week"
+		-- Set the age of files that you want to purge from your downloads folder
+		
+		
+		set myFolder to (choose folder)
+		-- Check folder and move files to the trash that are older than N days.
+		tell application "Finder"
+			try
+				delete (every item of myFolder whose modification date is less than ((current date)) - 7 * days)
+				display dialog "Files were deleted!"
+			on error err
+				display dialog err
+			end try
+			
+		end tell
+		
+		-- Display a dialog window asking whether to empty trash or not
+		set theButton to button returned of (display dialog "Would you like to empty the trash?" with icon caution buttons {"Empty Trash", "Cancel"} default button "Cancel" giving up after 10)
+		
+		if theButton is "Empty Trash" then
+			tell application "Finder"
+				empty trash
+			end tell
+			
+		end if
+	end if
+	
+	--user selects Clean up
+else if result = {button returned:"Desktop Clean Up!"} then
+	
+	tell application "Finder"
+		set myDesktop to alias ((path to desktop folder as text))
+		
+		-- folders to sort into
+		set myMusic to alias ((path to home folder as text) & "Music")
+		set myPics to alias ((path to home folder as text) & "Pictures")
+		set myVideos to alias ((path to home folder as text) & "Movies")
+		set myDocs to alias ((path to home folder as text) & "Documents")
+		
+		--extension lists
+		set musicExt to {".mp3", ".aac"}
+		set picsExt to {".jpg", ".gif", ".tif", ".png", ".psd"}
+		set videosExt to {".avi", ".mpg", ".mov", "mp4"}
+		set docsExt to {".pdf", ".txt", ".php", ".doc", ".xls", ".sav", ".key", ".html", ".htm", ".pages", ".jmp", "docx"}
+		
+		set allFiles to files of myDesktop
+		repeat with theFile in allFiles
+			copy name of theFile as string to FileName
+			
+			repeat with ext in musicExt
+				if FileName ends with ext then
+					move theFile to myMusic
+				end if
+			end repeat
+			
+			repeat with ext in picsExt
+				if FileName ends with ext then
+					move theFile to myPics
+				end if
+			end repeat
+			
+			repeat with ext in docsExt
+				if FileName ends with ext then
+					move theFile to myDocs
+				end if
+			end repeat
+			
+			repeat with ext in videosExt
+				if FileName ends with ext then
+					move theFile to myVideos
+				end if
+			end repeat
+			
+		end repeat
+	end tell
+	display dialog "Your Desktop has been Cleaned.
+All files have been moved to their corresponding directory in your home folder" buttons {"Done"} default button 1
+end if
+
+
+end
